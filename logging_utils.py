@@ -1,5 +1,5 @@
 import logging
-
+import os
 ROOT_DIRECTORY = "..\\logs\\"
 
 
@@ -11,6 +11,8 @@ def setup_logger(name, level=logging.DEBUG):
     :param level: The logging level (default is DEBUG).
     :return: Configured logger object.
     """
+    if not os.path.exists(ROOT_DIRECTORY):
+        os.makedirs(ROOT_DIRECTORY)
     log_file = ROOT_DIRECTORY + name + ".log"
     logger = logging.getLogger(name)
     logger.setLevel(level)

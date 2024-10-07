@@ -1,6 +1,6 @@
 from file_db import FileDB
 from logging_utils import setup_logger
-from enum import Enum, auto
+from enum import Enum
 
 
 # Setup logger for file
@@ -12,6 +12,12 @@ class SyncState(Enum):
     PROCESSES = 1
 
 
-class DbSynchronizer:
-    pass
+class DbSynchronizer(FileDB):
+    def __init__(self, filename, state, database=None):
+        super().__init__(filename,database)
+        self.state = state
+
+    def get_value(self,key):
+        super().load_file()
+        super().get_value(key)
 
