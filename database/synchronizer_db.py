@@ -42,6 +42,10 @@ class SynchronizerDB(FileDB):
         :param key: The key for which the value is requested.
         :return: The value associated with the provided key.
         """
+        if self.read_lock.acquire(blocking=False):
+            pass
+        else:
+            logger.info("Reached max!")
         with self.read_lock:
             self.write_lock.acquire()
             self.write_lock.release()

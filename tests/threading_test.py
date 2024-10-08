@@ -32,7 +32,17 @@ def simple_db_test(sync_db, index):
     assert sync_db.get_value(index) is None
 
 
-def assert_synchronizer_threads():
+def readers_assertion(sync_db, index):
+    """
+    check for max readers
+    :param sync_db:
+    :param index:
+    :return:
+    """
+    sync_db.get_value(index)
+
+
+def assert_synchronizer_threads(func):
     """
     make multiple threads run the same simple db assertion at the same time.
     :return: None
@@ -48,7 +58,7 @@ def assert_synchronizer_threads():
     )
     threads = []
     for i in range(THREADS_NUM):
-        threads.append(threading.Thread(target=simple_db_test, args=(sync_db, i)))
+        threads.append(threading.Thread(target=func, args=(sync_db, i)))
 
     for thread in threads:
         thread.start()
@@ -58,4 +68,4 @@ def assert_synchronizer_threads():
 
 
 if __name__ == "__main__":
-    assert_synchronizer_threads()
+    assert_synchronizer_threads(readers_assertion)
