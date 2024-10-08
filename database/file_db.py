@@ -11,6 +11,8 @@ class FileDB(Database):
     def __init__(self, filename, database=None):
         super().__init__(database)
         self.filename = filename
+        if database is not None:
+            self.dump_file()
 
     def dump_file(self):
         """

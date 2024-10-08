@@ -21,14 +21,14 @@ def simple_db_test(sync_db, index):
     logger.info(f"on thread {index} seconds value = {results}")
     assert results
 
-    #assert sync_db.delete_value(index)
+    assert sync_db.delete_value(index)
 
-    #assert sync_db.get_value(index) is None
+    assert sync_db.get_value(index) is None
 
 
 def assert_synchronizer_threads():
     db = {}
-    for i in range(10):
+    for i in range(THREADS_NUM):
         db[i] = False
     sync_db = SynchronizerDB(
         FILENAME,
@@ -37,7 +37,7 @@ def assert_synchronizer_threads():
         db
     )
     threads = []
-    for i in range(1, THREADS_NUM):
+    for i in range(THREADS_NUM):
         threads.append(threading.Thread(target=simple_db_test, args=(sync_db, i)))
 
     for thread in threads:
