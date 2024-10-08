@@ -11,6 +11,12 @@ THREADS_NUM = 10
 
 
 def simple_db_test(sync_db, index):
+    """
+    a simple set of instructions for the database
+    :param sync_db:
+    :param index:
+    :return: None
+    """
 
     results = sync_db.get_value(index)
     logger.info(f"on thread {index} first value = {results}")
@@ -27,6 +33,10 @@ def simple_db_test(sync_db, index):
 
 
 def assert_synchronizer_threads():
+    """
+    make multiple threads run the same simple db assertion at the same time.
+    :return: None
+    """
     db = {}
     for i in range(THREADS_NUM):
         db[i] = False

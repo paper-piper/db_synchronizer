@@ -9,6 +9,11 @@ logger = setup_logger('file_db')
 class FileDB(Database):
 
     def __init__(self, filename, database=None):
+        """
+        initiate a database which can write to file
+        :param filename: the name of the file where the data will be saved.
+        :param database: optional, will run over the old database and create a new one.
+        """
         super().__init__(database)
         self.filename = filename
         if database is not None:
@@ -47,6 +52,10 @@ class FileDB(Database):
 
 
 def assert_file_db():
+    """
+    make sure the file db class works fine
+    :return:
+    """
     file_db = FileDB("assertions_test.pickle", {"test": 1, "another value": 0})
     file_db.dump_file()
     assert file_db.get_value("test") == 1
