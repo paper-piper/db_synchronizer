@@ -1,7 +1,7 @@
 from logging_utils import setup_logger
 
 # Setup logger for file
-logger = setup_logger('database')
+logger = setup_logger('base_db')
 
 
 class Database:
@@ -26,7 +26,7 @@ class Database:
             logger.info(f"Set value for key '{key}' to '{val}'")
             return True
         except KeyError as e:
-            logger.error(f"Failed to set value for key '{key}': key doesn't exist.")
+            logger.info(f"Failed to set value for key '{key}': key doesn't exist.")
             return False
 
     def get_value(self, key):
@@ -39,7 +39,7 @@ class Database:
             value = self.db[key]
             return value
         except KeyError:
-            logger.error(f"Failed to retrieve value for key '{key}': key doesn't exist")
+            logger.info(f"Failed to retrieve value for key '{key}': key doesn't exist")
             return None
 
     def delete_value(self, key):
@@ -59,7 +59,7 @@ class Database:
             raise KeyError(f"Key '{key}' not found in the database.")
 
 
-def assert_database():
+def assert_base_db():
     db = Database({1: "1"})
     assert db.get_value(1) == "1"
 
@@ -71,5 +71,5 @@ def assert_database():
 
 
 if __name__ == "__main__":
-    assert_database()
+    assert_base_db()
 

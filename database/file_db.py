@@ -1,4 +1,4 @@
-from base_db import Database
+from database.base_db import Database
 import pickle
 from logging_utils import setup_logger
 
@@ -40,20 +40,19 @@ class FileDB(Database):
             logger.error(f"File '{self.filename}' not found.")
             return False
         except Exception as e:
-            logger.error(f"Failed to read database from file '{
-                         self.filename}': {e}")
+            logger.error(f"Failed to read database from file '{self.filename}': {e}")
             return False
 
 
 def assert_file_db():
-    file_db = FileDB("test.pickle", {"test": 1, "another value": 0})
+    file_db = FileDB("assertions_test.pickle", {"test": 1, "another value": 0})
     file_db.dump_file()
     assert file_db.get_value("test") == 1
 
     file_db.delete_value("test")
     file_db.dump_file()
 
-    file_db_2 = FileDB("test.pickle")
+    file_db_2 = FileDB("assertions_test.pickle")
     file_db_2.load_file()
     assert not file_db_2.get_value("test")
 
