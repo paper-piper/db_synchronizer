@@ -7,49 +7,34 @@ logger = setup_logger('threading_test')
 
 FILENAME = "assertions_test.pickle"
 MAX_READERS = 10
-THREADS_NUM = 30
+READERS_NUM = 100
+WRITERS_NUM = 20
+LOOP_TIMES = 100
+DATABASE_LENGTH = 20
 
 
-def simple_db_test(sync_db, index):
-    """
-    a simple set of instructions for the database
-    :param sync_db:
-    :param index:
-    :return: None
-    """
-
-    results = sync_db.get_value(index)
-    logger.info(f"on thread {index} first value = {results}")
-    assert not results
-
-    sync_db.set_value(index, True)
-    results = sync_db.get_value(index)
-    logger.info(f"on thread {index} seconds value = {results}")
-    assert results
-
-    # assert sync_db.delete_value(index)
-
-    # assert sync_db.get_value(index) is None
+def reader_work(sync_db, key):
+    for i in range(LOOP_TIMES):
+        sync_db.get_value(key)
 
 
-def readers_assertion(sync_db, index):
-    """
-    check for max readers
-    :param sync_db:
-    :param index:
-    :return:
-    """
-    for i in range(10):
-        sync_db.get_value(index)
+def writer_work(sync_db, key, value):
+    for i in range(LOOP_TIMES):
+        sync_db.set_value(key, value)
 
 
-def assert_synchronizer_threads(func):
+def special_writer_work(sync_db):
+    for i in range(LOOP_TIMES):
+        sync_db.set_value(i % (DATABASE_LENGTH/2), 1)
+
+
+def assert_synchronizer_threads():
     """
     make multiple threads run the same simple db assertion at the same time.
     :return: None
     """
     db = {}
-    for i in range(THREADS_NUM):
+    for i in range(DATABASE_LENGTH):
         db[i] = False
     sync_db = SynchronizerDB(
         FILENAME,
@@ -58,8 +43,18 @@ def assert_synchronizer_threads(func):
         db
     )
     threads = []
-    for i in range(THREADS_NUM):
-        threads.append(threading.Thread(target=func, args=(sync_db, i)))
+    for i in range(READERS_NUM):
+        # make threads work in range between 0-20
+        index = i % DATABASE_LENGTH
+        threads.append(threading.Thread(target=reader_work, args=(sync_db, index)))
+
+    for i in range(2, WRITERS_NUM):
+        # make threads work in range between 10-20
+        index = (i % (DATABASE_LENGTH/2)) + DATABASE_LENGTH/2
+        threads.append(threading.Thread(target=writer_work, args=(sync_db, index, i)))
+
+    special_thread = threading.Thread(target=special_writer_work, args=(sync_db,))
+    threads.append(special_thread)
 
     for thread in threads:
         thread.start()
@@ -67,6 +62,9 @@ def assert_synchronizer_threads(func):
     for thread in threads:
         thread.join()
 
+    for i in range(DATABASE_LENGTH):
+        print(sync_db.get_value(i))
+
 
 if __name__ == "__main__":
-    assert_synchronizer_threads(readers_assertion)
+    assert_synchronizer_threads()
