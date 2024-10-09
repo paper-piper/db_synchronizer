@@ -24,9 +24,9 @@ class SynchronizerDB(FileDB):
         :param database: Optional database object to initialize the FileDB superclass.
         :return: None
         """
-        super().__init__(filename,database)
+        super().__init__(filename, database)
         self.state = state
-
+        self.max_readers = max_readers
         if state == SyncState.THREADS:
             self.read_lock = threading.Semaphore(max_readers)
             self.write_lock = threading.Lock()
@@ -42,13 +42,7 @@ class SynchronizerDB(FileDB):
         :param key: The key for which the value is requested.
         :return: The value associated with the provided key.
         """
-        if self.read_lock.acquire(blocking=False):
-            pass
-        else:
-            logger.info("Reached max!")
         with self.read_lock:
-            self.write_lock.acquire()
-            self.write_lock.release()
             super().load_file()
             results = super().get_value(key)
 
@@ -61,11 +55,13 @@ class SynchronizerDB(FileDB):
         :param value: The value to set in the database.
         :return: The result of setting the value.
         """
-        with self.write_lock:
-            with self.read_lock:
-                super().load_file()
-                results = super().set_value(key, value)
-                super().dump_file()
+        self.get_write_lock()
+
+        super().load_file()
+        results = super().set_value(key, value)
+        super().dump_file()
+
+        self.release_write_lock()
 
         return results
 
@@ -75,10 +71,25 @@ class SynchronizerDB(FileDB):
         :param key: The key for which the value is to be deleted.
         :return: The result of deleting the value.
         """
-        with self.write_lock:
-            with self.read_lock:
-                super().load_file()
-                results = super().delete_value(key)
-                super().dump_file()
+        self.get_write_lock()
+
+        super().load_file()
+        results = super().delete_value(key)
+        super().dump_file()
+
+        self.release_write_lock()
 
         return results
+
+    def get_write_lock(self):
+        self.write_lock.acquire()
+        for i in range(self.max_readers):
+            self.read_lock.acquire()
+
+        logger.info(f"got write lock")
+
+    def release_write_lock(self):
+        for i in range(self.max_readers):
+            self.read_lock.release()
+        self.write_lock.release()
+        logger.info(f"released write lock")

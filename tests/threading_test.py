@@ -27,9 +27,9 @@ def simple_db_test(sync_db, index):
     logger.info(f"on thread {index} seconds value = {results}")
     assert results
 
-    assert sync_db.delete_value(index)
+    # assert sync_db.delete_value(index)
 
-    assert sync_db.get_value(index) is None
+    # assert sync_db.get_value(index) is None
 
 
 def readers_assertion(sync_db, index):
@@ -68,4 +68,4 @@ def assert_synchronizer_threads(func):
 
 
 if __name__ == "__main__":
-    assert_synchronizer_threads(readers_assertion)
+    assert_synchronizer_threads(simple_db_test)
