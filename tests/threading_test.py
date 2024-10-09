@@ -7,7 +7,7 @@ logger = setup_logger('threading_test')
 
 FILENAME = "assertions_test.pickle"
 MAX_READERS = 10
-THREADS_NUM = 10
+THREADS_NUM = 30
 
 
 def simple_db_test(sync_db, index):
@@ -39,7 +39,8 @@ def readers_assertion(sync_db, index):
     :param index:
     :return:
     """
-    sync_db.get_value(index)
+    for i in range(10):
+        sync_db.get_value(index)
 
 
 def assert_synchronizer_threads(func):
@@ -68,4 +69,4 @@ def assert_synchronizer_threads(func):
 
 
 if __name__ == "__main__":
-    assert_synchronizer_threads(simple_db_test)
+    assert_synchronizer_threads(readers_assertion)

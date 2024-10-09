@@ -42,6 +42,9 @@ class SynchronizerDB(FileDB):
         :param key: The key for which the value is requested.
         :return: The value associated with the provided key.
         """
+        # check if the read_lock is locked (for checking purpose)
+        self.check_for_max_readers()
+
         with self.read_lock:
             super().load_file()
             results = super().get_value(key)
@@ -86,10 +89,19 @@ class SynchronizerDB(FileDB):
         for i in range(self.max_readers):
             self.read_lock.acquire()
 
-        logger.info(f"got write lock")
-
     def release_write_lock(self):
         for i in range(self.max_readers):
             self.read_lock.release()
         self.write_lock.release()
-        logger.info(f"released write lock")
+
+    def check_for_max_readers(self):
+        if self.state == SyncState.THREADS:
+            if self.read_lock.acquire(blocking=False):
+                self.read_lock.release()
+            else:
+                logger.info("Reached max!")
+        else:
+            if self.read_lock.acquire(block=False):
+                self.read_lock.release()
+            else:
+                logger.info("Reached max!")
